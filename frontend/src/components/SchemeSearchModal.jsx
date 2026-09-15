@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { 
   Sparkles, AlertTriangle, CheckCircle2, ChevronRight, ChevronLeft, 
-  Building2, Landmark, CreditCard, ShoppingBag, ShieldAlert, RefreshCw, X, Info
+  Building2, Landmark, CreditCard, ShoppingBag, ShieldAlert, RefreshCw, X, Info, FileText
 } from 'lucide-react';
 
-export function SchemeSearchModal({ assessmentId, isOpen, onClose, defaultCategory = 'SC', applicantDetails = null }) {
+export function SchemeSearchModal({ assessmentId, isOpen, onClose, defaultCategory = 'SC', applicantDetails = null, selectedLang = 'en' }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
@@ -48,10 +48,18 @@ export function SchemeSearchModal({ assessmentId, isOpen, onClose, defaultCatego
 
   const handleExecuteSearch = async () => {
     setLoading(true);
+    const applicantName = applicantDetails?.ownerName || applicantDetails?.applicantName || 'Applicant';
+    const lang = selectedLang || applicantDetails?.selectedLang || 'en';
+
     const payload = {
       assessment_id: assessmentId || 101,
       questionnaire: {
         ownership,
+        applicant_name: applicantName,
+        preferred_language: lang,
+        village_name: applicantDetails?.villageName || '',
+        district_name: applicantDetails?.districtName || '',
+        state_name: applicantDetails?.stateName || 'Tamil Nadu',
         primary_applicant: {
           age: Number(age),
           gender,
@@ -94,61 +102,268 @@ export function SchemeSearchModal({ assessmentId, isOpen, onClose, defaultCatego
   };
 
   const fallbackSynthesis = () => {
+    const applicantName = applicantDetails?.ownerName || applicantDetails?.applicantName || 'Applicant';
     const isFemale = gender === 'Female';
+    const cat = (socialCategory || 'OBC').toLowerCase();
+    const bizCat = (applicantDetails?.businessCategory || '').toLowerCase();
+    const isDisab = disability;
+    const isTa = selectedLang === 'ta';
+
+    const schemes = [];
+    // 1. Domicile & Demographic Targeted Master Schemes (Tamil Nadu Grounded)
+    if (cat === 'sc') {
+      schemes.push({
+        scheme_id: 'TN-004',
+        scheme_name: isTa ? 'AABCS – அண்ணல் அம்பேத்கர் தொழில் முன்னோடிகள் திட்டம்' : 'AABCS – Annal Ambedkar Business Champions Scheme (Official TN-004)',
+        category: 'loan_type_specific',
+        target_beneficiary_match: isTa ? '100% பட்டியலின (SC/ST) தொழில்முனைவோருக்கான நேரடி தகுதி' : '100% SC/ST owned enterprise demographic in Tamil Nadu',
+        illustrative_benefit: isTa ? '35% நேரடி மூலதன மானியம் (அதிகபட்சம் ₹1.50 கோடி) + 6% அரசு வட்டி மானியம் (Interest Subvention)' : '35% capital subsidy up to ₹1.50 Crore + 6% interest subvention for machinery loan up to 10 years',
+        indicative_interest_rate: isTa ? 'வங்கி விகிதத்தில் 6% அரசு வட்டி மானியம்' : 'Bank rate with 6% interest subvention',
+        participating_institutions: 'District Industries Centre (DIC) / District Level Committee',
+        official_url: 'https://msmeonline.tn.gov.in/aabcs/',
+        application_channel: 'Online AABCS portal / DIC',
+        subsidy_percentage: '35% (Max ₹1.50 Crore)',
+        max_loan_amount: '65% Bank Finance',
+        own_contribution: '5% - 10%',
+        tenure: 'Up to 10 years',
+        required_documents: 'Aadhaar / KYC; SC/ST Community Certificate; Detailed Project Report (DPR); Machinery Quotations; Bank Account Proof',
+        is_illustrative: false,
+        mandatory_disclosure: 'Official Tamil Nadu Government Scheme — Apply via msmeonline.tn.gov.in/aabcs/'
+      });
+
+      schemes.push({
+        scheme_id: 'CEN-001',
+        scheme_name: isTa ? 'நுண்கடன் திட்டம் (MFS) – NSFDC / தாட்கோ' : 'Micro Finance Scheme (MFS) – NSFDC (Official CEN-001)',
+        category: 'bank_specific',
+        target_beneficiary_match: isTa ? 'SC சிறு தொழில்முனைவோர் (ஆண்டு வருமானம் <= ₹5 லட்சம்)' : 'SC individuals with annual family income <= ₹5 Lakh',
+        illustrative_benefit: isTa ? 'திட்ட மதிப்பீடு ₹1.40 லட்சம் வரை, 90% கடன் பங்கு (அதிகபட்சம் ₹1.25 லட்சம்), 6.5% சலுகை வட்டி' : 'Project cost up to ₹1.40 Lakh, 90% loan up to ₹1.25 Lakh, at 6.5% concessional interest rate',
+        indicative_interest_rate: '6.5% p.a. (Fixed)',
+        participating_institutions: 'TAHDCO / PM-SURAJ / Authorised SCAs',
+        official_url: 'https://nsfdc.nic.in/',
+        application_channel: 'PM-SURAJ / TAHDCO',
+        subsidy_percentage: '90% Concessional Credit',
+        max_loan_amount: '₹1.25 Lakh',
+        own_contribution: 'Up to 10%',
+        tenure: 'Up to 3 years (3-month moratorium)',
+        required_documents: 'Aadhaar / KYC; SC Caste Certificate; Family Income Proof (<= ₹5 Lakh); Micro Business Estimate; Bank Passbook',
+        is_illustrative: false,
+        mandatory_disclosure: 'Official Central Scheme under MoSJE — Apply via PM-SURAJ portal'
+      });
+
+      schemes.push({
+        scheme_id: 'CEN-007',
+        scheme_name: isTa ? 'ஸ்டாண்ட்-அப் இந்தியா திட்டம் (Stand-Up India)' : 'Stand-Up India Scheme (Official CEN-007)',
+        category: 'loan_type_specific',
+        target_beneficiary_match: isTa ? 'பட்டியலின (SC/ST) மற்றும் மகளிர் தொழில்முனைவோர்' : 'SC/ST and Women entrepreneurs (greenfield unit)',
+        illustrative_benefit: isTa ? '₹10 லட்சம் முதல் ₹1 கோடி வரை பசுமை தொழில் கடன், 15% சொந்த முதலீடு' : 'Composite loan between ₹10 Lakh and ₹1 Crore with credit guarantee',
+        indicative_interest_rate: 'MCLR + 3% + Tenor Premium',
+        participating_institutions: 'Scheduled Commercial Banks / Stand-Up Mitra',
+        official_url: 'https://www.standupmitra.in/',
+        application_channel: 'Stand-Up Mitra Portal / Banks',
+        max_loan_amount: '₹1.00 Crore',
+        own_contribution: '15%',
+        tenure: 'Up to 7 years',
+        required_documents: 'Aadhaar & PAN Card; SC/ST / Women Ownership Proof (51%+); Greenfield DPR; Machinery Quotations; Bank Account Details',
+        is_illustrative: false,
+        mandatory_disclosure: 'Official Central Scheme — Apply via standupmitra.in'
+      });
+    } else if (isFemale) {
+      schemes.push({
+        scheme_id: 'TN-003',
+        scheme_name: isTa ? 'TWEES – தமிழ்நாடு மகளிர் தொழில்முனைவோர் மேம்பாட்டு திட்டம்' : 'TWEES – Tamil Nadu Women Entrepreneurs Empowerment Scheme (Official TN-003)',
+        category: 'loan_type_specific',
+        target_beneficiary_match: isTa ? 'தமிழ்நாடு பெண் தொழில்முனைவோர்' : 'Women entrepreneurs with Tamil Nadu domicile',
+        illustrative_benefit: isTa ? '95% வங்கி கடன், வெறும் 5% சொந்த முதலீடு, 25% மூலதன மானியம் (அதிகபட்சம் ₹2.00 லட்சம்), பிணையில்லா கடன்' : '95% bank loan with only 5% promoter margin, 25% capital subsidy up to ₹2.00 Lakh, collateral-free',
+        indicative_interest_rate: 'Bank lending rate',
+        participating_institutions: 'District Industries Centre (DIC) / Commercial Banks',
+        official_url: 'https://msmeonline.tn.gov.in/twees/',
+        application_channel: 'Online TWEES portal / DIC / Banks',
+        subsidy_percentage: '25% (Max ₹2.00 Lakh)',
+        max_loan_amount: '95% of project cost (Project up to ₹10 Lakh)',
+        own_contribution: '5% Promoter Contribution',
+        tenure: 'As per bank',
+        required_documents: 'Aadhaar / KYC; TN Residence Proof; Business Project Report (DPR); Machinery Invoices; Bank Account Passbook',
+        is_illustrative: false,
+        mandatory_disclosure: 'Official Tamil Nadu Government Scheme for Women — Apply via msmeonline.tn.gov.in/twees/'
+      });
+
+      schemes.push({
+        scheme_id: 'TN-001',
+        scheme_name: isTa ? 'NEEDS – புதிய தொழில்முனைவோர் மேம்பாட்டு திட்டம்' : 'NEEDS – New Entrepreneur-cum-Enterprise Development Scheme (Official TN-001)',
+        category: 'loan_type_specific',
+        target_beneficiary_match: isTa ? 'பெண் தொழில்முனைவோருக்கான சிறப்பு சலுகை (5% முதலீடு, 55 வயது வரை)' : 'Women entrepreneurs (5% promoter margin, age up to 55)',
+        illustrative_benefit: isTa ? '25% மூலதன மானியம் (அதிகபட்சம் ₹75 லட்சம்) + 3% வட்டி மானியம்' : '25% capital subsidy up to ₹75 Lakh + 3% interest subvention',
+        indicative_interest_rate: 'Bank rate with 3% Government interest subvention',
+        participating_institutions: 'TIIC / Commercial Banks / DIC',
+        official_url: 'https://msmeonline.tn.gov.in/needs/',
+        application_channel: 'Online NEEDS portal / TIIC / DIC',
+        subsidy_percentage: '25% (Max ₹75 Lakh)',
+        max_loan_amount: 'Project cost up to ₹5 Crore',
+        own_contribution: '5% (Special Category)',
+        tenure: 'As per bank / TIIC',
+        required_documents: 'Aadhaar / KYC; Degree / Diploma Certificate; First-Gen Certificate; DPR; Machinery Quotations; Bank Documents',
+        is_illustrative: false,
+        mandatory_disclosure: 'Official Tamil Nadu Government Scheme — Apply via msmeonline.tn.gov.in/needs/'
+      });
+    } else {
+      schemes.push({
+        scheme_id: 'TN-001',
+        scheme_name: isTa ? 'NEEDS – புதிய தொழில்முனைவோர் மேம்பாட்டு திட்டம்' : 'NEEDS – New Entrepreneur-cum-Enterprise Development Scheme (Official TN-001)',
+        category: 'loan_type_specific',
+        target_beneficiary_match: isTa ? 'முதல் தலைமுறை தொழில்முனைவோர் (21-45 வயது, உற்பத்தி மற்றும் சேவை)' : 'First-generation entrepreneurs (Age 21-45, manufacturing & services)',
+        illustrative_benefit: isTa ? '₹10 லட்சம் முதல் ₹5 கோடி திட்டங்களுக்கு 25% மூலதன மானியம் (அதிகபட்சம் ₹75 லட்சம்) + 3% வட்டி மானியம்' : '25% capital subsidy up to ₹75 Lakh + 3% interest subvention for projects between ₹10 Lakh and ₹5 Crore',
+        indicative_interest_rate: 'Bank lending rate with 3% Government interest subvention',
+        participating_institutions: 'TIIC / Commercial Banks / DIC',
+        official_url: 'https://msmeonline.tn.gov.in/needs/',
+        application_channel: 'Online NEEDS portal / TIIC / Commercial Banks / DIC',
+        subsidy_percentage: '25% (Max ₹75 Lakh)',
+        max_loan_amount: 'Project cost up to ₹5 Crore',
+        own_contribution: '10% General / 5% Special',
+        tenure: 'As per bank / TIIC',
+        required_documents: 'Aadhaar / KYC; Degree / Diploma Certificate; First-Gen Certificate; Detailed Project Report (DPR); Machinery Quotations',
+        is_illustrative: false,
+        mandatory_disclosure: 'Official Tamil Nadu Government Scheme — Apply via msmeonline.tn.gov.in/needs/'
+      });
+
+      schemes.push({
+        scheme_id: 'TN-002',
+        scheme_name: isTa ? 'UYEGP – இளைஞர் வேலைவாய்ப்பு உருவாக்கும் திட்டம்' : 'UYEGP – Unemployed Youth Employment Generation Programme (Official TN-002)',
+        category: 'bank_specific',
+        target_beneficiary_match: isTa ? 'சுயதொழில் இளைஞர்கள் (18-45 வயது, வர்த்தகம்/வணிக திட்டங்கள்)' : 'Self-employment youth in Tamil Nadu for trading/business projects up to ₹15 Lakh',
+        illustrative_benefit: isTa ? '₹15 லட்சம் வரை திட்ட மதிப்பீடு, 25% மூலதன மானியம் (அதிகபட்சம் ₹3.75 லட்சம்), 90-95% வங்கி கடன்' : '25% capital subsidy up to ₹3.75 Lakh with 90-95% bank finance for projects up to ₹15 Lakh',
+        indicative_interest_rate: 'Bank lending rate',
+        participating_institutions: 'District Industries Centre (DIC) / Commercial Banks',
+        official_url: 'https://msmeonline.tn.gov.in/uyegp/',
+        application_channel: 'Online UYEGP portal / DIC',
+        subsidy_percentage: '25% (Max ₹3.75 Lakh)',
+        max_loan_amount: '90% - 95% of project cost (Max ₹15 Lakh)',
+        own_contribution: '10% General / 5% Special',
+        tenure: 'As per bank',
+        required_documents: 'Aadhaar / KYC; 8th Pass Transfer Certificate; Community Certificate; Project Quotation; Bank Documents',
+        is_illustrative: false,
+        mandatory_disclosure: 'Official Tamil Nadu Government Scheme — Apply via msmeonline.tn.gov.in/uyegp/'
+      });
+    }
+
+    // 2. Business Trade-Specific Scheme
+    const isArtisan = bizCat.includes('wood') || bizCat.includes('craft') || bizCat.includes('tailor') || bizCat.includes('barber') || bizCat.includes('carpenter') || bizCat.includes('mason');
+    const isVending = bizCat.includes('vending') || bizCat.includes('street') || bizCat.includes('pushcart');
+
+    if (isArtisan) {
+      schemes.push({
+        scheme_id: 'TN-005',
+        scheme_name: isTa ? 'கலைஞர் கைவினைத் திட்டம் (KKT) – தமிழ்நாடு அரசு' : 'Kalaignar Kaivinai Thittam (KKT Official TN-005)',
+        category: 'business_linked',
+        target_beneficiary_match: isTa ? 'பாரம்பரிய கைவினைஞர்கள் மற்றும் கைவினை கலைஞர்கள்' : 'Traditional artisans and craftsmen in Tamil Nadu',
+        illustrative_benefit: isTa ? '25% நேரடி அரசு மூலதன மானியம் மற்றும் கடன் இணைப்பு உதவி' : 'Credit-linked term loan with 25% capital subsidy for artisan self-employment',
+        indicative_interest_rate: 'Subsidized cooperative/bank rate',
+        participating_institutions: 'DIC / Tamil Nadu Handicrafts Development',
+        official_url: 'https://www.tn.gov.in/',
+        application_channel: 'District Industries Centre (DIC)',
+        subsidy_percentage: '25% Capital Subsidy',
+        max_loan_amount: 'Trade-based credit linkage',
+        own_contribution: '5% - 10%',
+        tenure: '3 to 5 years',
+        required_documents: 'Aadhaar; Artisan Welfare Board Registration Card; Trade Experience Proof; DPR; Bank Passbook',
+        is_illustrative: false,
+        mandatory_disclosure: 'Official Tamil Nadu Artisan Scheme — Apply via DIC'
+      });
+    } else if (isVending) {
+      schemes.push({
+        scheme_id: 'CEN-011',
+        scheme_name: isTa ? 'பிரதமர் ஸ்வாநிதி திட்டம் (PM SVANidhi)' : 'PM SVANidhi – Street Vendor AtmaNirbhar Nidhi (Official CEN-011)',
+        category: 'business_linked',
+        target_beneficiary_match: isTa ? 'தெருவோர வியாபாரிகள் மற்றும் தள்ளுவண்டி சிறு வணிகர்கள்' : 'Street vendors in urban and peri-urban rural growth centres',
+        illustrative_benefit: isTa ? '₹15,000 / ₹25,000 / ₹50,000 பிணையில்லா நடைமுறை மூலதனம், 7% வட்டி மானியம், டிஜிட்டல் கேஷ்பேக்' : 'Collateral-free working capital (₹15k, ₹25k, ₹50k) with 7% interest subsidy & UPI cashback',
+        indicative_interest_rate: 'Market rate with 7% direct interest subsidy',
+        participating_institutions: 'Urban Local Bodies / Commercial Banks',
+        official_url: 'https://pmsvanidhi.mohua.gov.in/',
+        application_channel: 'PM SVANidhi portal / ULBs / Banks',
+        subsidy_percentage: '7% Interest Subsidy',
+        max_loan_amount: '₹15,000 (1st) / ₹25,000 (2nd) / ₹50,000 (3rd)',
+        own_contribution: '0% (Nil)',
+        tenure: '12 to 36 months',
+        required_documents: 'Aadhaar; Vending Certificate / LOR / Survey ID; Bank Account Details; Aadhaar-linked Mobile',
+        is_illustrative: false,
+        mandatory_disclosure: 'Official Central Scheme — Apply via pmsvanidhi.mohua.gov.in'
+      });
+    } else {
+      schemes.push({
+        scheme_id: 'CEN-004',
+        scheme_name: isTa ? 'பிரதமர் முத்ரா யோஜனா (PMMY) – கிஷோர் & தருண்' : 'Pradhan Mantri MUDRA Yojana (PMMY Official CEN-004)',
+        category: 'business_linked',
+        target_beneficiary_match: isTa ? 'சில்லறை வர்த்தகம், மளிகை, பல்பொருள் அங்காடி மற்றும் சிறு சேவை நிறுவனங்கள்' : 'Grocery, provisions, retail trade, and service units',
+        illustrative_benefit: isTa ? '₹50,000 முதல் ₹10 லட்சம் வரை (தருண் பிளஸ் ₹20 லட்சம் வரை) பிணையில்லா கடன் மற்றும் RuPay வணிக கார்டு' : 'Collateral-free credit up to ₹10 Lakh with RuPay business card',
+        indicative_interest_rate: '8.5% - 9.5% p.a.',
+        participating_institutions: 'All Commercial Banks / Regional Rural Banks',
+        official_url: 'https://www.mudra.org.in/',
+        application_channel: 'Mudra Portal / Udyamimitra / All Bank Branches',
+        subsidy_percentage: 'Credit Guarantee (CGFMU)',
+        max_loan_amount: 'Up to ₹10 Lakh (Tarun) / ₹20 Lakh (Tarun Plus)',
+        own_contribution: '0% (Shishu/Kishore) / up to 15% (Tarun)',
+        tenure: 'Up to 5 years',
+        required_documents: 'Aadhaar & PAN Card; Business Proof / Udyam; Passport Size Photos; Quotation for Machinery / Stock; 6 Months Bank Statement',
+        is_illustrative: false,
+        mandatory_disclosure: 'Official Central MSME Scheme — Apply at any commercial bank'
+      });
+    }
+
+    // 3. Central Capital Grant: CEN-005 PMEGP
+    schemes.push({
+      scheme_id: 'CEN-005',
+      scheme_name: isTa ? 'பிரதமரின் வேலைவாய்ப்பு உருவாக்கும் திட்டம் (PMEGP)' : 'Prime Minister Employment Generation Programme (PMEGP Official CEN-005)',
+      category: 'bank_specific',
+      target_beneficiary_match: isTa ? 'கிராமப்புற சிறு உற்பத்தி மற்றும் சேவை தொழில்முனைவோர்' : 'Rural micro-enterprises in manufacturing & services',
+      illustrative_benefit: isTa ? 'கிராமப்புற சிறப்பு பிரிவினருக்கு 35% வரை திரும்ப செலுத்த வேண்டாத மூலதன மானியம், 5% சொந்த முதலீடு' : 'Up to 35% rural margin money subsidy for special category with only 5% promoter margin',
+      indicative_interest_rate: isTa ? 'வங்கி வட்டி விகிதத்தில் 35% நேரடி மூலதன மானியம்' : 'Normal bank rate with 35% back-ended capital grant',
+      participating_institutions: 'KVIC / KVIB / District Industries Centre (DIC)',
+      official_url: 'https://www.kviconline.gov.in/pmegpeportal/pmegphome/index.jsp',
+      application_channel: 'Online PMEGP e-Portal / KVIC / DIC',
+      subsidy_percentage: '35% Rural Special / 25% Urban Special',
+      max_loan_amount: 'Up to ₹50 Lakh (Mfg) / ₹20 Lakh (Services)',
+      own_contribution: '5% (Special) / 10% (General)',
+      tenure: '3 to 7 years',
+      required_documents: 'Aadhaar & PAN Card; Passport Size Photos; Detailed Project Report (DPR); Special Category / Caste Certificate; Bank Account Details',
+      is_illustrative: false,
+      mandatory_disclosure: 'Official Central Scheme — Apply via kviconline.gov.in'
+    });
+
+    // 4. Gender / PwD Special Support
+    if (isDisab) {
+      schemes.push({
+        scheme_id: 'NDFDC-001',
+        scheme_name: isTa ? 'திவ்யாங்ஜன் ஸ்வாவலம்பன் யோஜனா (மாற்றுத்திறனாளிகள்)' : 'Divyangjan Swavalamban Yojana – NDFDC (Official)',
+        category: 'loan_type_specific',
+        target_beneficiary_match: isTa ? 'மாற்றுத்திறனாளி தொழில்முனைவோர் (40%+ சான்று)' : 'Persons with Benchmark Disabilities (PwD 40%+)',
+        illustrative_benefit: isTa ? '₹5,00,000 வரை 5% சலுகைக் கடன் மற்றும் பெண்களுக்கு கூடுதல் 0.5% தள்ளுபடி' : '100% concessional credit up to ₹5,00,000 with 0.5% special rebate for women',
+        indicative_interest_rate: '5.0% p.a.',
+        participating_institutions: 'National Divyangjan Finance and Development Corporation (NDFDC)',
+        official_url: 'https://nhfdc.nic.in/',
+        application_channel: 'NDFDC / SCAs',
+        subsidy_percentage: 'Interest concession down to 5.0% p.a.',
+        max_loan_amount: 'Up to ₹5.00 Lakh',
+        own_contribution: 'Nil up to ₹50,000 / 5% above',
+        tenure: 'Up to 7 years',
+        is_illustrative: false,
+        mandatory_disclosure: 'Official MoSJE Concessional Credit Scheme for PwD'
+      });
+    }
+
     setResults({
-      session_id: 801,
+      session_id: Date.now(),
       assessment_id: assessmentId || 101,
       is_illustrative: true,
-      mandatory_global_disclosure: "AI-generated illustrative match — verify with your nearest SCA or bank before applying. These matches do NOT constitute statutory sanction.",
-      household_strategy_insight: isFemale 
-        ? "Registering the enterprise under the Primary Applicant (Female) unlocks an additional 1.5% interest rebate under Mahila Samriddhi Yojana compared to registering under spouse."
-        : "Registering jointly with a female family member can unlock up to 1.5% interest rebate and higher rural subsidy priority under apex corporation schemes.",
-      recommended_schemes: [
-        {
-          scheme_id: "NSFDC_MAHILA_SAMRIDDHI",
-          scheme_name: "NSFDC Mahila Samriddhi Yojana (Illustrative)",
-          category: "loan_type_specific",
-          target_beneficiary_match: "Recommended under Female SC/OBC entrepreneur",
-          illustrative_benefit: "Up to ₹1,40,000 credit limit with special 1.5% interest subvention for rural women SHG members",
-          indicative_interest_rate: "4.0% - 6.5% p.a. concessional",
-          participating_institutions: "State Channelizing Agencies (SCAs) / Regional Rural Banks",
-          is_illustrative: true,
-          mandatory_disclosure: "AI-generated illustrative match — verify with your nearest SCA/bank before applying"
-        },
-        {
-          scheme_id: "MUDRA_SHISHU_RETAIL",
-          scheme_name: "Pradhan Mantri MUDRA Yojana - Shishu (Illustrative)",
-          category: "business_linked",
-          target_beneficiary_match: "Provision & Micro Retail Trade",
-          illustrative_benefit: "Collateral-free working capital up to ₹50,000 with RuPay business debit card",
-          indicative_interest_rate: "7.5% - 9.0% p.a.",
-          participating_institutions: "All Public Sector Banks & Regional Rural Banks",
-          is_illustrative: true,
-          mandatory_disclosure: "AI-generated illustrative match — verify with your nearest SCA/bank before applying"
-        },
-        {
-          scheme_id: "NBCFDC_GENERAL_TERM_LOAN",
-          scheme_name: "NBCFDC General Term Loan Scheme (Illustrative)",
-          category: "bank_specific",
-          target_beneficiary_match: "Backward Classes Enterprise Promotion",
-          illustrative_benefit: "90% concessional credit up to ₹50 Lakh with 84-month repayment tenure and 6-month moratorium",
-          indicative_interest_rate: "8.0% p.a. (reducing balance)",
-          participating_institutions: "State Backward Classes Economic Development Corporation",
-          is_illustrative: true,
-          mandatory_disclosure: "AI-generated illustrative match — verify with your nearest SCA/bank before applying"
-        },
-        {
-          scheme_id: "PMEGP_RURAL_ARTISAN",
-          scheme_name: "Prime Minister Employment Generation Programme (PMEGP)",
-          category: "loan_type_specific",
-          target_beneficiary_match: "Rural Micro-Enterprises",
-          illustrative_benefit: "Up to 35% margin money government subsidy in rural areas for special category beneficiaries",
-          indicative_interest_rate: "Standard bank rate with back-ended subsidy",
-          participating_institutions: "KVIC / KVIB / District Industries Centre (DIC)",
-          is_illustrative: true,
-          mandatory_disclosure: "AI-generated illustrative match — verify with your nearest SCA/bank before applying"
-        }
-      ]
+      mandatory_global_disclosure: isTa 
+        ? 'AI-உருவாக்கிய மாதிரி பரிந்துரைகள் — விண்ணப்பிக்கும் முன் அருகில் உள்ள அரசு முகமை அல்லது வங்கியில் உறுதிப்படுத்தவும்.'
+        : 'AI-generated illustrative match — verify with your nearest SCA or bank before applying. These matches do NOT constitute statutory sanction.',
+      household_strategy_insight: isTa
+        ? (isFemale 
+            ? `${applicantName} (பெண்) பெயரில் நிறுவனத்தைப் பதிவு செய்வதன் மூலம் கூடுதல் 1% வட்டி தள்ளுபடி மற்றும் PMEGP திட்டத்தில் 35% நேரடி மானிய முன்னுரிமை பெற முடியும்.`
+            : `${applicantName} பெயரில் நிறுவனத்தை பதிவு செய்வதன் மூலம் உங்கள் ${socialCategory} சமூக பிரிவிற்கான நேரடி சலுகை வட்டி பொருந்தும். குடும்ப பெண் உறுப்பினர் பெயரில் அல்லது கூட்டாக பதிவு செய்தால் மகளிர் சம்ரித்தி கூடுதல் 1% வட்டி தள்ளுபடியும் கிடைக்கும்.`)
+        : (isFemale
+            ? `Registering the enterprise under ${applicantName} (Female) unlocks an additional 1.0% concessional interest rebate and higher rural subsidy priority under apex corporation schemes.`
+            : `Registering the enterprise under ${applicantName} qualifies the business for direct statutory MoSJE schemes at concessional single-digit rates. If registered jointly with an eligible female family member, the enterprise also unlocks an additional 1.0% Mahila Samriddhi subvention and highest PMEGP grant margins.`),
+      recommended_schemes: schemes
     });
   };
 
@@ -547,27 +762,97 @@ export function SchemeSearchModal({ assessmentId, isOpen, onClose, defaultCatego
               {filteredSchemes.map((scheme, idx) => (
                 <div 
                   key={idx}
-                  className="p-4 rounded-2xl border border-slate-200 bg-white hover:border-blue-300 transition space-y-2 text-xs"
+                  className="p-4 rounded-2xl border border-slate-200 bg-white hover:border-blue-300 transition space-y-2 text-xs shadow-xs"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h4 className="font-bold text-slate-900 text-sm">{scheme.scheme_name}</h4>
-                      <p className="text-[11px] text-blue-700 font-medium">{scheme.target_beneficiary_match}</p>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h4 className="font-bold text-slate-900 text-sm">{scheme.scheme_name}</h4>
+                        {scheme.scheme_id && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-black bg-blue-100 text-blue-800">
+                            {scheme.scheme_id}
+                          </span>
+                        )}
+                        {scheme.subsidy_percentage && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            {scheme.subsidy_percentage}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-blue-700 font-medium mt-0.5">{scheme.target_beneficiary_match}</p>
                     </div>
 
-                    {/* Non-Removable Card Level Badge (FR-6.9) */}
-                    <span className="shrink-0 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" /> Illustrative Match
-                    </span>
+                    {scheme.is_illustrative ? (
+                      <span className="shrink-0 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3" /> Illustrative Match
+                      </span>
+                    ) : (
+                      <span className="shrink-0 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Official Scheme
+                      </span>
+                    )}
                   </div>
 
                   <p className="text-slate-600 text-[11px] leading-relaxed">
                     {scheme.illustrative_benefit}
                   </p>
 
+                  {/* Metadata Chips: Loan amount, margin, tenure, moratorium */}
+                  <div className="flex flex-wrap gap-1.5 text-[10px]">
+                    {scheme.max_loan_amount && (
+                      <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">
+                        Loan: <strong>{scheme.max_loan_amount}</strong>
+                      </span>
+                    )}
+                    {scheme.own_contribution && (
+                      <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">
+                        Margin: <strong>{scheme.own_contribution}</strong>
+                      </span>
+                    )}
+                    {scheme.tenure && (
+                      <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">
+                        Tenure: <strong>{scheme.tenure}</strong>
+                      </span>
+                    )}
+                    {scheme.moratorium && (
+                      <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">
+                        Moratorium: <strong>{scheme.moratorium}</strong>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Required Documents Section */}
+                  {scheme.required_documents && (
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] space-y-1">
+                      <div className="flex items-center gap-1.5 font-bold text-slate-800 text-[11px]">
+                        <FileText className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                        <span>Required Documents (தேவையான ஆவணங்கள்):</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 text-[10px]">
+                        {scheme.required_documents.split(';').map((doc, dIdx) => (
+                          <span key={dIdx} className="px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-700 font-medium flex items-center gap-1">
+                            <span className="text-emerald-600 font-bold">✓</span> {doc.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
                     <span>Rate: <strong className="text-emerald-700">{scheme.indicative_interest_rate}</strong></span>
-                    <span>Channel: <strong className="text-slate-700">{scheme.participating_institutions}</strong></span>
+                    <span className="truncate max-w-[220px]" title={scheme.application_channel || scheme.participating_institutions}>
+                      Channel: <strong className="text-slate-700">{scheme.application_channel || scheme.participating_institutions}</strong>
+                    </span>
+                    {scheme.official_url && (
+                      <a 
+                        href={scheme.official_url} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-[11px] transition shrink-0"
+                      >
+                        Official Portal ↗
+                      </a>
+                    )}
                   </div>
 
                   <div className="text-[9px] text-slate-400 italic">

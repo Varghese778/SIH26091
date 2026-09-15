@@ -22,6 +22,98 @@ const CATEGORIES = [
   "Dairy & Milk Production"
 ];
 
+const CATEGORY_NAMES = {
+  ta: {
+    "Grocery & Daily Provisions": "மளிகை மற்றும் அன்றாடப் பொருட்கள் கடை",
+    "Handicrafts & Handloom": "கைவினைப் பொருட்கள் மற்றும் கைத்தறி",
+    "Poultry & Livestock": "கோழிப்பண்ணை மற்றும் கால்நடை வளர்ப்பு",
+    "Metalwork & Carpentry": "உலோக வேலை மற்றும் தச்சு வேலை",
+    "Food Processing & Snacks": "உணவு பதப்படுத்துதல் மற்றும் தின்பண்டங்கள்",
+    "Apparel & Tailoring": "ஆடை வடிவமைப்பு மற்றும் தையல் கடை",
+    "Repairs & Services": "பழுதுபார்ப்பு மற்றும் சேவை மையம்",
+    "Dairy & Milk Production": "பால் பண்ணை மற்றும் பால் உற்பத்தி"
+  },
+  hi: {
+    "Grocery & Daily Provisions": "किराना एवं दैनिक उपभोग की दुकान",
+    "Handicrafts & Handloom": "हस्तशिल्प एवं हथकरघा",
+    "Poultry & Livestock": "मुर्गी पालन एवं पशुपालन",
+    "Metalwork & Carpentry": "धातु कार्य एवं बढ़ईगीरी",
+    "Food Processing & Snacks": "खाद्य प्रसंस्करण एवं नमकीन",
+    "Apparel & Tailoring": "परिधान एवं सिलाई कार्य",
+    "Repairs & Services": "मरम्मत एवं सेवा केंद्र",
+    "Dairy & Milk Production": "डेयरी एवं दुग्ध उत्पादन"
+  },
+  te: {
+    "Grocery & Daily Provisions": "కిరాణా మరియు నిత్యావసర సరుకుల దుకాణం",
+    "Handicrafts & Handloom": "చేతివృత్తులు మరియు చేనేత",
+    "Poultry & Livestock": "కోళ్ళ పెంపకం మరియు పశుసంవర్ధకం",
+    "Metalwork & Carpentry": "మెటల్ వర్క్ మరియు వడ్రంగి పని",
+    "Food Processing & Snacks": "ఆహార ప్రాసెసింగ్ మరియు స్నాక్స్",
+    "Apparel & Tailoring": "దుస్తులు మరియు టైలరింగ్",
+    "Repairs & Services": "రిపేర్లు మరియు సేవా కేంద్రం",
+    "Dairy & Milk Production": "డైరీ మరియు పాల ఉత్పత్తి"
+  }
+};
+
+const TN_DISTRICT_COORDS = {
+  'chennai': [13.0827, 80.2707],
+  'coimbatore': [11.0168, 76.9558],
+  'madurai': [9.9252, 78.1198],
+  'tiruchirappalli': [10.7905, 78.7047],
+  'trichy': [10.7905, 78.7047],
+  'salem': [11.6643, 78.1460],
+  'tirunelveli': [8.7139, 77.7567],
+  'tiruppur': [11.1085, 77.3411],
+  'erode': [11.3410, 77.7172],
+  'vellore': [12.9165, 79.1325],
+  'thanjavur': [10.7870, 79.1378],
+  'dindigul': [10.3673, 77.9803],
+  'kancheepuram': [12.8342, 79.7036],
+  'kanchipuram': [12.8342, 79.7036],
+  'tiruvallur': [13.1432, 79.9079],
+  'thiruvallur': [13.1432, 79.9079],
+  'cuddalore': [11.7480, 79.7714],
+  'kanyakumari': [8.0883, 77.5385],
+  'kanniyakumari': [8.0883, 77.5385],
+  'thoothukkudi': [8.7642, 78.1348],
+  'tuticorin': [8.7642, 78.1348],
+  'virudhunagar': [9.5680, 77.9624],
+  'sivaganga': [9.8433, 78.4809],
+  'sivagangai': [9.8433, 78.4809],
+  'ramanathapuram': [9.3639, 78.8395],
+  'pudukkottai': [10.3833, 78.8001],
+  'theni': [10.0104, 77.4768],
+  'karur': [10.9601, 78.0766],
+  'namakkal': [11.2189, 78.1674],
+  'dharmapuri': [12.1211, 78.1582],
+  'krishnagiri': [12.5186, 78.2138],
+  'tiruvannamalai': [12.2253, 79.0747],
+  'viluppuram': [11.9401, 79.4861],
+  'villupuram': [11.9401, 79.4861],
+  'kallakurichi': [11.7384, 78.9639],
+  'ranipet': [12.9272, 79.3330],
+  'tirupathur': [12.4925, 78.5678],
+  'chengalpattu': [12.6819, 79.9836],
+  'tenkasi': [8.9594, 77.3152],
+  'mayiladuthurai': [11.1075, 79.6524],
+  'thiruvarur': [10.7725, 79.6365],
+  'tiruvarur': [10.7725, 79.6365],
+  'nagapattinam': [10.7672, 79.8449],
+  'perambalur': [11.2342, 78.8807],
+  'ariyalur': [11.1401, 79.0786],
+  'the nilgiris': [11.4102, 76.6950],
+  'nilgiris': [11.4102, 76.6950]
+};
+
+function getDistrictCoords(districtName) {
+  if (!districtName) return [10.0524, 78.3344];
+  const clean = districtName.trim().toLowerCase();
+  for (const [k, v] of Object.entries(TN_DISTRICT_COORDS)) {
+    if (clean.includes(k) || k.includes(clean)) return v;
+  }
+  return [10.0524, 78.3344];
+}
+
 const STORAGE_KEY = 'vyapaarsathi_assess_draft_v2';
 
 export function AssessmentForm({ onSubmit, onCancel, defaultUser, selectedLang = 'en' }) {
@@ -33,16 +125,21 @@ export function AssessmentForm({ onSubmit, onCancel, defaultUser, selectedLang =
       const saved = sessionStorage.getItem(STORAGE_KEY);
       if (saved) return JSON.parse(saved);
     } catch {}
+    const initialName = defaultUser?.name || '';
+    const isMaleName = /ramakrishnan|kumar|ramanathan|murugan|selvam|suresh|rajesh|mohamed/i.test(initialName);
+    const isFemaleName = /meena|lakshmi|devi|priya|anita|radha|kumari/i.test(initialName);
+    const initialGender = isMaleName ? 'Male' : isFemaleName ? 'Female' : 'Male';
+
     return {
       currentStep: 1,
-      ownerName: defaultUser?.name || '',
+      ownerName: initialName,
       marginCapital: 100000,
       businessCategory: CATEGORIES[0],
       businessIdeaDescription: '',
       selectedVillage: null,
       age: 30,
       socialCategory: 'OBC',
-      gender: 'Female',
+      gender: initialGender,
       disabilityStatus: false,
       exServicemenStatus: false
     };
@@ -104,6 +201,59 @@ export function AssessmentForm({ onSubmit, onCancel, defaultUser, selectedLang =
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  const [isGeocodingVillage, setIsGeocodingVillage] = useState(false);
+
+  // Accurate forward geocoding when village is selected from database search
+  const handleSelectVillage = async (v) => {
+    setIsGeocodingVillage(true);
+    setSearchQuery('');
+    setSearchResults([]);
+    setValidationError('');
+
+    // 1. Immediately jump map to district center so user sees responsive feedback
+    const initialCoords = getDistrictCoords(v.districtName);
+    let finalLat = initialCoords[0];
+    let finalLng = initialCoords[1];
+
+    updateField('selectedVillage', {
+      ...v,
+      latitude: finalLat,
+      longitude: finalLng
+    });
+
+    // 2. High-precision pinpointing for specific village
+    const query = `${v.villageName}, ${v.subdistrictName || ''}, ${v.districtName}, Tamil Nadu, India`;
+
+    try {
+      const res = await fetch(`/api/assess/location/geocode?q=${encodeURIComponent(query)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.latitude && data.longitude && Number(data.latitude) !== 0) {
+          finalLat = Number(data.latitude);
+          finalLng = Number(data.longitude);
+        }
+      } else {
+        const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+        if (nomRes.ok) {
+          const nomData = await nomRes.json();
+          if (Array.isArray(nomData) && nomData.length > 0) {
+            finalLat = parseFloat(nomData[0].lat);
+            finalLng = parseFloat(nomData[0].lon);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Geocoding village fallback:', err);
+    } finally {
+      updateField('selectedVillage', {
+        ...v,
+        latitude: finalLat,
+        longitude: finalLng
+      });
+      setIsGeocodingVillage(false);
+    }
+  };
 
   // Geolocation detector with accurate reverse geocoding
   const handleDetectLocation = () => {
@@ -252,7 +402,8 @@ export function AssessmentForm({ onSubmit, onCancel, defaultUser, selectedLang =
       socialCategory: socialCategory || 'OBC',
       gender: gender || 'Female',
       disabilityStatus: !!disabilityStatus,
-      exServicemenStatus: !!exServicemenStatus
+      exServicemenStatus: !!exServicemenStatus,
+      preferredLanguage: selectedLang || 'en'
     };
 
     sessionStorage.removeItem(STORAGE_KEY);
@@ -261,16 +412,21 @@ export function AssessmentForm({ onSubmit, onCancel, defaultUser, selectedLang =
 
   const handleResetForm = () => {
     sessionStorage.removeItem(STORAGE_KEY);
+    const initialName = defaultUser?.name || '';
+    const isMaleName = /ramakrishnan|kumar|ramanathan|murugan|selvam|suresh|rajesh|mohamed/i.test(initialName);
+    const isFemaleName = /meena|lakshmi|devi|priya|anita|radha|kumari/i.test(initialName);
+    const initialGender = isMaleName ? 'Male' : isFemaleName ? 'Female' : 'Male';
+
     setFormData({
       currentStep: 1,
-      ownerName: defaultUser?.name || '',
+      ownerName: initialName,
       marginCapital: 50000,
       businessCategory: CATEGORIES[0],
       businessIdeaDescription: '',
       selectedVillage: null,
       age: 30,
       socialCategory: 'OBC',
-      gender: 'Female',
+      gender: initialGender,
       disabilityStatus: false,
       exServicemenStatus: false
     });
@@ -281,16 +437,16 @@ export function AssessmentForm({ onSubmit, onCancel, defaultUser, selectedLang =
       {/* 1. Sovereign Government Header & Stepper */}
       <div className="mb-6 sm:mb-8">
         <div className="flex items-center gap-2 text-xs font-bold text-[#006B7A] uppercase tracking-wider mb-2">
-          <span>Enterprise Assessment</span>
+          <span>{selectedLang === 'ta' ? 'தொழில் மதிப்பீடு' : selectedLang === 'hi' ? 'उद्यम मूल्यांकन' : selectedLang === 'te' ? 'వ్యాపార అంచనా' : 'Enterprise Assessment'}</span>
           <ChevronRight className="w-3.5 h-3.5 text-[#009DB3]" />
-          <span>Step {currentStep} of 3</span>
+          <span>{selectedLang === 'ta' ? `படி ${currentStep} / 3` : selectedLang === 'hi' ? `चरण ${currentStep} / 3` : selectedLang === 'te' ? `దశ ${currentStep} / 3` : `Step ${currentStep} of 3`}</span>
         </div>
 
         <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-[#006B7A] tracking-tight">
-          Rural Business Feasibility & Concessional Credit Intake
+          {t.assessHeaderTitle || 'Rural Business Feasibility & Concessional Credit Intake'}
         </h1>
         <p className="text-xs sm:text-sm text-slate-700 mt-1 max-w-2xl font-medium">
-          Complete these 3 progressive steps to check local village demand, calculate your 90% loan eligibility, and synthesize an official bank-ready credit dossier.
+          {t.assessHeaderSubtitle || 'Complete these 3 progressive steps to check local village demand, calculate your 90% loan eligibility, and synthesize an official bank-ready credit dossier.'}
         </p>
 
         {/* 3-Step Visual Progress Bar */}
@@ -308,7 +464,9 @@ export function AssessmentForm({ onSubmit, onCancel, defaultUser, selectedLang =
                 stepNumber={1} 
                 size="sm"
               />
-              <span className="text-[11px] sm:text-xs font-bold truncate">1. Idea</span>
+              <span className="text-[11px] sm:text-xs font-bold truncate">
+                1. {selectedLang === 'ta' ? 'தொழில் யோசனை' : selectedLang === 'hi' ? 'व्यवसाय विचार' : selectedLang === 'te' ? 'వ్యాపార ఆలోచన' : 'Idea'}
+              </span>
             </div>
           </div>
 
@@ -325,7 +483,9 @@ export function AssessmentForm({ onSubmit, onCancel, defaultUser, selectedLang =
                 stepNumber={2} 
                 size="sm"
               />
-              <span className="text-[11px] sm:text-xs font-bold truncate">2. Location</span>
+              <span className="text-[11px] sm:text-xs font-bold truncate">
+                2. {selectedLang === 'ta' ? 'இருப்பிடம்' : selectedLang === 'hi' ? 'स्थान' : selectedLang === 'te' ? 'ప్రదేశం' : 'Location'}
+              </span>
             </div>
           </div>
 
@@ -340,7 +500,9 @@ export function AssessmentForm({ onSubmit, onCancel, defaultUser, selectedLang =
                 stepNumber={3} 
                 size="sm"
               />
-              <span className="text-[11px] sm:text-xs font-bold truncate">3. Profile</span>
+              <span className="text-[11px] sm:text-xs font-bold truncate">
+                3. {selectedLang === 'ta' ? 'சுயவிவரம்' : selectedLang === 'hi' ? 'प्रोफ़ाइल' : selectedLang === 'te' ? 'ప్రొఫైల్' : 'Profile'}
+              </span>
             </div>
           </div>
         </div>
@@ -503,16 +665,7 @@ export function AssessmentForm({ onSubmit, onCancel, defaultUser, selectedLang =
                       <button
                         key={v.villageLgdCode}
                         type="button"
-                        onClick={() => {
-                          updateField('selectedVillage', {
-                            ...v,
-                            latitude: v.latitude || 10.0524,
-                            longitude: v.longitude || 78.3344
-                          });
-                          setSearchQuery('');
-                          setSearchResults([]);
-                          setValidationError('');
-                        }}
+                        onClick={() => handleSelectVillage(v)}
                         className="w-full text-left px-4 py-3 hover:bg-[#CBF9FF]/40 border-b border-slate-100 last:border-none flex items-center justify-between transition-colors cursor-pointer"
                       >
                         <div>
@@ -529,16 +682,24 @@ export function AssessmentForm({ onSubmit, onCancel, defaultUser, selectedLang =
               </div>
 
               {/* Real Interactive Google Catchment Map (No competitor shop marks during location selection) */}
-              <GoogleMapView
-                latitude={selectedVillage?.latitude || 10.0524}
-                longitude={selectedVillage?.longitude || 78.3344}
-                radiusKm={10}
-                originName={selectedVillage?.villageName || "Proposed Business Location"}
-                showRadius={true}
-                showPlaces={false}
-                places={[]}
-                height="320px"
-              />
+              <div className="relative">
+                <GoogleMapView
+                  latitude={selectedVillage?.latitude || 10.0524}
+                  longitude={selectedVillage?.longitude || 78.3344}
+                  radiusKm={10}
+                  originName={selectedVillage?.villageName || "Proposed Business Location"}
+                  showRadius={true}
+                  showPlaces={false}
+                  places={[]}
+                  height="320px"
+                />
+                {isGeocodingVillage && (
+                  <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#009DB3] shadow-md flex items-center gap-2 text-xs font-bold text-[#006B7A] animate-pulse z-20">
+                    <Crosshair className="w-3.5 h-3.5 animate-spin text-[#006B7A]" />
+                    <span>Pinpointing village coordinates on Google Maps...</span>
+                  </div>
+                )}
+              </div>
 
               {/* Selected Village Card */}
               {selectedVillage ? (
@@ -546,7 +707,14 @@ export function AssessmentForm({ onSubmit, onCancel, defaultUser, selectedLang =
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
                     <div>
-                      <div className="text-xs font-bold text-[#006B7A]">Selected Revenue Village:</div>
+                      <div className="text-xs font-bold text-[#006B7A] flex items-center gap-2">
+                        <span>Selected Revenue Village:</span>
+                        {isGeocodingVillage && (
+                          <span className="text-[11px] font-semibold text-sky-700 animate-pulse">
+                            (Updating GPS location...)
+                          </span>
+                        )}
+                      </div>
                       <div className="text-base font-black text-slate-900 mt-0.5">
                         {selectedVillage.villageName}, {selectedVillage.subdistrictName || 'Block'}, {selectedVillage.districtName} ({selectedVillage.stateName || 'India'})
                       </div>
@@ -643,9 +811,9 @@ export function AssessmentForm({ onSubmit, onCancel, defaultUser, selectedLang =
                     onChange={e => updateField('gender', e.target.value)}
                     className="w-full px-4 rounded-xl border-2 border-slate-300 focus:border-[#009DB3] bg-white text-sm font-bold text-slate-900 focus:outline-none min-h-[48px] shadow-xs cursor-pointer"
                   >
-                    <option value="Female">Female (Priority Rebate)</option>
-                    <option value="Male">Male</option>
-                    <option value="Other">Other</option>
+                    <option value="Male">{selectedLang === 'ta' ? 'ஆண் (Male)' : selectedLang === 'hi' ? 'पुरुष (Male)' : selectedLang === 'te' ? 'పురుషుడు (Male)' : 'Male'}</option>
+                    <option value="Female">{selectedLang === 'ta' ? 'பெண் (Female - கூடுதல் வட்டி சலுகை)' : selectedLang === 'hi' ? 'महिला (Female - विशेष छूट)' : selectedLang === 'te' ? 'మహిళ (Female - ప్రత్యేక రాయితీ)' : 'Female (Priority Rebate)'}</option>
+                    <option value="Other">{selectedLang === 'ta' ? 'இதர (Other)' : selectedLang === 'hi' ? 'अन्य (Other)' : selectedLang === 'te' ? 'ఇతర (Other)' : 'Other'}</option>
                   </select>
                 </div>
 
